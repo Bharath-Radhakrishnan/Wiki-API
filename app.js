@@ -23,7 +23,7 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(express.static("public"));
 
-//articles
+////////////////////////////////////ROUTE ALL ARTICLES/////////////////////////////////////////////////////////////
 app.route("/articles")
   .get(function(req, res) {
     Article.find({}, function(err, foundList) {
@@ -42,16 +42,61 @@ app.route("/articles")
   })
   .delete(function(req, res) {
 
-    Article.deleteOne({
-      title: req.body.title
-    }, function(err) {
+    Article.deleteMany(function(err) {
       if (!err) {
-        res.send("Succesfully Deleted");
+        res.send("Succesfully Deleted all articles");
       } else {
         res.send(err);
       }
     });
+  });
+///////////////////////////////////////////////////////////ROUTE A SPECIFIC ARTICLE////////////////////////////////////////
+app.route("/articles/:articleName")
+  .get(function(req, res) {
+    Article.findOne({
+      title: req.params.articleName
+    }, function(err, foundItem) {
+      if (foundItem) {
+        res.send(foundItem);
+      } else {
+        res.send("Item not found");
+      }
+    });
   })
+  .put(function(req, res) {
+    Article.update({
+      title: req.params.articleName
+    }, {
+      title: req.body.title,
+      content: req.body.content
+    }, {
+      overwrite: true
+    }, function(err) {
+      if (!err) console.log("Succesfully updated using put");
+    });
+  })
+  .patch(function(req, res) {
+    Article.updateOne({
+        title: req.params.articleName
+      }, {
+        $set: req.body
+      },
+      function(err) {
+        if (!err) console.log("Succesfully updated using patch");
+      }
+    );
+  })
+  .delete(function(req, res) {
+    Article.deleteOne({
+      title: req.params.articleName
+    }, function(err) {
+      if (!err) console.log("Succesfully deleted " + req.params.articleName);
+    });
+  });
+
+
+
+
 app.listen(3000, function() {
   console.log("Server started on port 3000");
 })
